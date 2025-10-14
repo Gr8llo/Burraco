@@ -2,10 +2,12 @@ package com.burraco.app.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,20 +21,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.layout.positionInWindow
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -40,32 +38,53 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.burraco.app.model.Team
 import com.burraco.app.R
-import com.burraco.app.navigation.Screen
+import com.burraco.app.navigation.GameGroupScreen
 import com.burraco.app.ui.theme.BurracoBlack
 import com.burraco.app.ui.theme.BurracoRed
+import com.burraco.app.ui.util.absoluteSafeOffsetY
+import com.burraco.app.viewmodel.GameScreenViewModel
 
 @Composable
 fun TeamPointsColumn(
     team: Team,
     modifier: Modifier = Modifier,
+    gameScreenViewModel: GameScreenViewModel,
     isLast: Boolean = false,
-    insertingNewRound: Boolean = false,
-    onClick: () -> Unit,
-    onNavigate: (String) -> Unit,
-    getGlobalPos: (Offset) -> Unit
+    onNavigate: (String) -> Unit
 ) {
+    val firstRoundTo1000 by gameScreenViewModel.firstRoundTo1000.collectAsState()
+    val currentRound by gameScreenViewModel.currentRound.collectAsState()
+    val firstTeamToDealCards by gameScreenViewModel.firstTeamToDealCards.collectAsState()
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = team.name,
-            style = MaterialTheme.typography.titleLarge.copy(fontSize = 35.sp),
-            overflow = TextOverflow.Ellipsis,
-            maxLines = 1,
-            modifier = Modifier.padding(horizontal = 8.dp)
-        )
+        Box {
+            Text(
+                text = team.name,
+                style = MaterialTheme.typography.titleLarge.copy(fontSize = 35.sp),
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .clickable(
+                        enabled = true,
+                        onClick = { gameScreenViewModel.firstTeamToDealCards.value = team.name },
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                    )
+            )
+            if (firstTeamToDealCards == team.name) {
+                Icon(
+                    painter = painterResource(R.drawable.heart),
+                    tint = BurracoRed,
+                    modifier = Modifier.size(20.dp).absoluteOffset(x=(-5).dp),
+                    contentDescription = "segno per chi da le carte"
+                )
+            }
+        }
         HorizontalDivider(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -76,17 +95,21 @@ fun TeamPointsColumn(
         team.scores.forEachIndexed { index, score ->
             RoundRow(
                 score = score,
+                firstRoundTo1000 = (index + 1) == firstRoundTo1000
             )
         }
 
-        if (insertingNewRound) ShowInputBox(onClick = onClick)
+        if (team.round < currentRound) ShowInputBox(onClick = {
+            onNavigate(GameGroupScreen.ScoreEntry.route + "/${team.name}")
+        })
         else ShowTotalScore(team = team, onNavigate = onNavigate)
 
-        Spacer(Modifier
-            .height(0.dp)
-            .onGloballyPositioned { coordinates ->
-                getGlobalPos(coordinates.positionInWindow())
-            }
+        Spacer(
+            Modifier
+                .height(0.dp)
+                .onGloballyPositioned { coordinates ->
+                    gameScreenViewModel.lastRowPos.value = coordinates.positionInWindow()
+                }
         )
     }
 
@@ -130,7 +153,7 @@ fun ShowTotalScore(
                     .size(40.dp)
                     .align(Alignment.CenterEnd)
                     .clickable {
-                        onNavigate(Screen.ScoreEntry.route + "/${team.name}")
+                        onNavigate(GameGroupScreen.ScoreEntry.route + "/${team.name}")
                     },
                 contentDescription = "edit"
             )

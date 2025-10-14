@@ -5,12 +5,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Scaffold
-import androidx.compose.ui.platform.LocalDensity
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.compose.rememberNavController
@@ -20,27 +19,25 @@ import com.burraco.app.viewmodel.BurracoViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.ui.unit.dp
-
-import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
-import com.airbnb.lottie.compose.LottieConstants
-
-
+import androidx.lifecycle.ViewModel
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavHostController
+import androidx.navigation.navigation
+import androidx.room.Room
+import com.burraco.app.navigation.GameGroupScreen
 import com.burraco.app.navigation.Screen
-import com.burraco.app.ui.components.AnimationPlayer
 import com.burraco.app.ui.screen.GameScreen
 import com.burraco.app.ui.screen.PlayerScreen
 import com.burraco.app.ui.screen.ScoreEntryScreen
 import com.burraco.app.ui.screen.TeamScreen
 import com.burraco.app.ui.screen.WinnerScreen
+import com.burraco.app.ui.util.adaptiveNavigationBarPadding
+import com.burraco.app.viewmodel.GameScreenViewModel
+import com.burraco.app.viewmodel.factory.GameScreenViewModelFactory
+import kotlin.getValue
 
 class MainActivity : ComponentActivity() {
 
@@ -78,31 +75,43 @@ class MainActivity : ComponentActivity() {
                             TeamScreen(
                                 modifier = Modifier.adaptiveNavigationBarPadding(),
                                 burracoViewModel = burracoViewModel,
-                                onNavigate = { screen -> navController.navigate(screen) }
+                                onNavigate = { screen -> navController.navigate(screen) {} }
                             )
                         }
-                        composable(Screen.Game.route) {
-                            GameScreen(
-                                modifier = Modifier.adaptiveNavigationBarPadding(),
-                                burracoViewModel = burracoViewModel,
-                                onNavigate = { screen -> navController.navigate(screen) }
-                            )
-                        }
-                        composable(Screen.ScoreEntry.route + "/{teamSelected}") { navString ->
-                            val teamName = navString.arguments?.getString("teamSelected")
-                            ScoreEntryScreen(
-                                modifier = Modifier.adaptiveNavigationBarPadding(),
-                                burracoViewModel = burracoViewModel,
-                                onNavigate = { screen -> navController.navigate(screen) },
-                                currentTeam = teamName
-                            )
-                        }
-                        composable(Screen.Winner.route){
-                            WinnerScreen(
-                                modifier = Modifier.adaptiveNavigationBarPadding(),
-                                burracoViewModel = burracoViewModel,
-                                onNavigate = { screen -> navController.navigate(screen)}
-                            )
+                        navigation(
+                            startDestination = GameGroupScreen.Game.route,
+                            route = Screen.Game.route,
+                        ) {
+                            composable("GameGroupRoot") { /* empty composable */ }
+                            composable(GameGroupScreen.Game.route) {
+                                val gameScreenViewModel = it.rememberSharedGameViewModel<GameScreenViewModel>(navController, burracoViewModel)
+                                GameScreen(
+                                    modifier = Modifier.adaptiveNavigationBarPadding(),
+                                    gameScreenViewModel = gameScreenViewModel,
+                                    onNavigate = { screen -> navController.navigate(screen) }
+                                )
+                            }
+                            composable(GameGroupScreen.ScoreEntry.route + "/{teamSelected}") { it ->
+                                val teamName = it.arguments?.getString("teamSelected")
+                                val gameScreenViewModel = it.rememberSharedGameViewModel<GameScreenViewModel>(navController, burracoViewModel)
+                                ScoreEntryScreen(
+                                    modifier = Modifier.adaptiveNavigationBarPadding(),
+                                    burracoViewModel = burracoViewModel,
+                                    gameScreenViewModel = gameScreenViewModel,
+                                    onNavigate = { screen -> navController.navigate(screen) },
+                                    currentTeam = teamName
+                                )
+                            }
+                            composable(GameGroupScreen.Winner.route) {
+                                val gameScreenViewModel = it.rememberSharedGameViewModel<GameScreenViewModel>(navController, burracoViewModel)
+
+                                WinnerScreen(
+                                    modifier = Modifier.adaptiveNavigationBarPadding(),
+                                    burracoViewModel = burracoViewModel,
+                                    gameScreenViewModel = gameScreenViewModel,
+                                    onNavigate = { screen -> navController.navigate(screen) }
+                                )
+                            }
                         }
                     }
                 }
@@ -112,21 +121,22 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Modifier.adaptiveNavigationBarPadding(thresholdDp: Int = 25): Modifier {
-    val bottomPaddingDp = WindowInsets.navigationBars
-        .asPaddingValues()
-        .calculateBottomPadding() // <-- già Dp, non serve conversione
-
-    val sides = if (bottomPaddingDp > thresholdDp.dp) {
-        // Con navigation bar "alta"
-        WindowInsetsSides.Top + WindowInsetsSides.Start + WindowInsetsSides.End + WindowInsetsSides.Bottom
-    } else {
-        // Con gesture bar "bassa"
-        WindowInsetsSides.Top + WindowInsetsSides.Start + WindowInsetsSides.End
+inline fun <reified T: ViewModel> NavBackStackEntry.rememberSharedGameViewModel(
+    navController: NavHostController,
+    burracoViewModel: BurracoViewModel,
+): T {
+    val navGraphRoute = destination.parent?.route ?: return viewModel()
+    val parentEntry = remember(this) {
+        navController.getBackStackEntry(navGraphRoute)
+    }
+    val factory = remember(parentEntry) {
+        GameScreenViewModelFactory(burracoViewModel)
     }
 
-    return this.windowInsetsPadding(
-        WindowInsets.systemBars.only(sides)
+    return viewModel(
+        viewModelStoreOwner = parentEntry,   //passando lo scope in automatico jetpackCompose capisce se bisogna o no ricreare il viewModel
+        factory = factory
     )
 }
+
 

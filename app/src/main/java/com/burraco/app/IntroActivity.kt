@@ -23,8 +23,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.burraco.app.ui.theme.BurracoTheme
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
-
 
 // le activity si usano per interagire con l'xml
 class IntroActivity: ComponentActivity() {

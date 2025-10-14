@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,11 +33,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.burraco.app.R
 import com.burraco.app.navigation.Screen
+import com.burraco.app.ui.components.BackGroundImage
 import com.burraco.app.ui.components.BurracoButton
 import com.burraco.app.ui.components.NameInputField
 import com.burraco.app.ui.components.PlayerCard
@@ -62,6 +65,7 @@ fun PlayerScreen(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
+        BackGroundImage()
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -110,12 +114,15 @@ fun PlayerScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom
         ) {
-            BurracoButton(onClick = {
-                players.clear()
-                inserting = false
-            }) {
+            BurracoButton(
+                enabled = players.isNotEmpty(),
+                onClick = {
+                    players.removeLastOrNull()
+                    inserting = false
+                }
+            ) {
                 Icon(
-                    painter = painterResource(R.drawable.bin_icon),
+                    painter = painterResource(R.drawable.person_remove_icon),
                     modifier = Modifier.size(30.dp),
                     tint = MaterialTheme.colorScheme.onPrimary,
                     contentDescription = "Icona reset"

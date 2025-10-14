@@ -1,8 +1,6 @@
 package com.burraco.app.ui.screen
 
 import android.annotation.SuppressLint
-import android.os.Build
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -14,20 +12,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.burraco.app.navigation.Screen
+import com.burraco.app.navigation.GameGroupScreen
 import com.burraco.app.ui.components.PointsInputField
 import com.burraco.app.ui.theme.BurracoBlack
 import com.burraco.app.ui.theme.BurracoRed
 import com.burraco.app.viewmodel.BurracoViewModel
+import com.burraco.app.viewmodel.GameScreenViewModel
+import com.burraco.app.ui.util.*
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
@@ -36,15 +32,14 @@ fun ScoreEntryScreen(
     burracoViewModel: BurracoViewModel,
     onNavigate: (String) -> Unit,
     currentTeam: String?,
+    gameScreenViewModel: GameScreenViewModel,
 ) {
-    val focusManager = LocalFocusManager.current
-
-    Box(modifier = modifier.fillMaxSize()) {
-
-        // Sfondo: schermata di gioco
+    Box(
+        modifier = modifier.fillMaxSize()
+    ) {
+//         Sfondo: schermata di gioco
         GameScreen(
-            burracoViewModel = burracoViewModel,
-            onNavigate = {}, // disattivato per overlay
+            gameScreenViewModel = gameScreenViewModel,
             modifier = modifier.blurIfSupported(10.dp)
         )
 
@@ -56,7 +51,7 @@ fun ScoreEntryScreen(
                 .pointerInput(Unit) {
                     detectTapGestures {
                         //focusManager.clearFocus()
-                        onNavigate(Screen.Game.route)
+                        onNavigate(GameGroupScreen.Game.route)
                     }
                 },// blocca interazioni sotto
             contentAlignment = Alignment.Center
@@ -107,7 +102,7 @@ fun ScoreEntryScreen(
                         team = burracoViewModel.getTeamByName(currentTeam ?: ""),
                         onPointsConfirmed = { name, burraco, point ->
                             burracoViewModel.addScore(name, Pair(burraco, point))
-                            onNavigate(Screen.Game.route)
+                            onNavigate(GameGroupScreen.Game.route)
                         },
                         currentRound = burracoViewModel.currentRound.value
                     )
@@ -115,22 +110,5 @@ fun ScoreEntryScreen(
             }
         }
 
-    }
-}
-
-//extension function -> estende una classe senza modificare direttamente il codice
-fun Modifier.blurIfSupported(radius: Dp): Modifier {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        this.blur(radius)
-    } else {
-        this // fallback: nessun blur
-    }
-}
-
-fun Modifier.fakeBlur(): Modifier {
-    return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-        this.background(Color(0x9E5B5858)) // grigio semi-trasparente
-    } else {
-        this // fallback: nessun blur
     }
 }

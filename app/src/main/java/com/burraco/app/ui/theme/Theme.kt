@@ -1,9 +1,7 @@
 package com.burraco.app.ui.theme
 
-import android.app.Activity
 import androidx.compose.ui.graphics.Color
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -22,7 +20,7 @@ private val LightColorScheme = lightColorScheme(
     primary = Color.Red,
     secondary = Color.LightGray,
     tertiary = Pink40,
-    background = Color(0xFFF8F4DF),
+    background = Color(0xFFFDF2C6),
     surface = Color(0xFFFCF7EF),
     onPrimary = Color.White,
     onSecondary = Color.Black,

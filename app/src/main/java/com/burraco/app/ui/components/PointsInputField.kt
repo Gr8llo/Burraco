@@ -14,6 +14,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -21,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -63,7 +65,7 @@ fun PointsInputField(
             label = "Punti - Burraco",
             onValueChange = { point -> burracoPoints = point },
             updateError = { isError -> burracoError = isError },
-            pointInitialValue = burracoPoints,
+            pointInitialValue = if (burracoPoints=="0") "" else burracoPoints,
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -72,7 +74,7 @@ fun PointsInputField(
             label = "Punti - Carte",
             onValueChange = { point -> cardPoints = point },
             updateError = { isError -> cardError = isError },
-            pointInitialValue = cardPoints,
+            pointInitialValue = if(cardPoints=="0") "" else cardPoints,
         )
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -100,6 +102,7 @@ fun OutlinedInputField(
 ) {
     var point by rememberSaveable { mutableStateOf(pointInitialValue) }
     var isError by rememberSaveable { mutableStateOf(false) }
+    val localFocusManager = LocalFocusManager.current
 
     OutlinedTextField(
         value = point,
@@ -137,7 +140,10 @@ fun OutlinedInputField(
             keyboardType = KeyboardType.Number
         ),
         keyboardActions = KeyboardActions(
-            onDone = { onValueChange(point) }
+            onDone = {
+                onValueChange(point)
+                localFocusManager.clearFocus()
+            }
         ),
         singleLine = true,
         shape = RoundedCornerShape(15.dp),

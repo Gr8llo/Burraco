@@ -22,6 +22,7 @@ import com.burraco.app.ui.theme.BurracoRed
 fun RoundRow(
     score: Pair<Int, Int>,
     modifier: Modifier=Modifier,
+    firstRoundTo1000: Boolean = false,
 ){
     Row {
         Column (
@@ -40,7 +41,7 @@ fun RoundRow(
                 modifier = modifier,
                 text = score.second.toString(),
                 style = MaterialTheme.typography.bodyLarge.copy(
-                    color = if (score.first < 0) BurracoRed else BurracoBlack
+                    color = if (score.second < 0) BurracoRed else BurracoBlack
                 )
             )
         }
@@ -57,7 +58,7 @@ fun RoundRow(
     }
     HorizontalDivider(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-        color = Color.Gray,
+        color = if (firstRoundTo1000) BurracoRed else Color.Gray,
         thickness = 2.dp
     )
 }

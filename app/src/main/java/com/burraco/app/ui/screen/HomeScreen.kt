@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.compose.LottieConstants
@@ -30,6 +31,8 @@ import com.burraco.app.ui.components.BurracoButton
 import com.burraco.app.ui.components.TemporaryMessage
 import com.burraco.app.ui.theme.BurracoBlack
 import com.burraco.app.ui.theme.BurracoRed
+import com.burraco.app.ui.components.BackGroundImage
+
 
 @Composable
 fun HomeScreen(
@@ -39,6 +42,7 @@ fun HomeScreen(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
+        BackGroundImage()
         Image(
             modifier = Modifier
                 .padding(15.dp)

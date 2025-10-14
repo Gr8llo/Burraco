@@ -1,11 +1,7 @@
 package com.burraco.app.ui.screen
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,13 +36,16 @@ import com.burraco.app.navigation.Screen
 import com.burraco.app.ui.components.AnimationPlayer
 import com.burraco.app.ui.components.BurracoButton
 import com.burraco.app.viewmodel.BurracoViewModel
+import com.burraco.app.viewmodel.GameScreenViewModel
 import kotlinx.coroutines.delay
+import com.burraco.app.ui.util.*
 
 @Composable
 fun WinnerScreen(
     modifier: Modifier = Modifier,
     burracoViewModel: BurracoViewModel,
     onNavigate: (String) -> Unit,
+    gameScreenViewModel: GameScreenViewModel,
 ) {
     val focusManager = LocalFocusManager.current
     var isVisibleButtonReset by rememberSaveable { mutableStateOf(false) }
@@ -55,8 +54,7 @@ fun WinnerScreen(
 
         // Sfondo: schermata di gioco
         GameScreen(
-            burracoViewModel = burracoViewModel,
-            onNavigate = {}, // disattivato per overlay
+            gameScreenViewModel = gameScreenViewModel,
             modifier = modifier.blurIfSupported(10.dp)
         )
 
@@ -68,7 +66,7 @@ fun WinnerScreen(
                 .clickable(
                     enabled = true,
                     onClick = { focusManager.clearFocus() }) // blocca interazioni sotto
-                .padding(bottom = 15.dp),
+                .padding(bottom = 30.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -155,13 +153,15 @@ fun Scoreboard(
                 animationSpec = tween(durationMillis = 1500)
             )
 
+            val name = if(team.name.length > 6) team.name.take(4) + "..." else team.name
+
             Text(
-                text = "$pos. ${team.name} - ${team.totalScore}",
+                text = "$pos. $name - ${team.totalScore}",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontSize = fontSize,
                     color = color
                 ),
-                modifier = Modifier.graphicsLayer(alpha = alpha, translationY = (translationY*(-50)))
+                modifier = Modifier.graphicsLayer(alpha = alpha, translationY = (translationY*(-50))),
             )
             Spacer(Modifier.height(10.dp))
         }

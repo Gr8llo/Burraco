@@ -33,6 +33,7 @@ import com.burraco.app.ui.components.PlayerCard
 import com.burraco.app.ui.theme.BurracoBlack
 import com.burraco.app.ui.theme.BurracoRed
 import com.burraco.app.viewmodel.BurracoViewModel
+import com.burraco.app.ui.components.BackGroundImage
 
 @Composable
 fun TeamScreen(
@@ -61,6 +62,7 @@ fun TeamScreen(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
+        BackGroundImage()
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
