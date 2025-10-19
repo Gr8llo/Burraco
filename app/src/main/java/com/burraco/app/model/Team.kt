@@ -1,9 +1,11 @@
 package com.burraco.app.model
 
+import com.burraco.app.data.entity.Player
+
 data class Team(
     val name: String,
-    val players: List<String>,
-    val scores: List<Pair<Int, Int>> =  emptyList(),  //Burraco - Carte - Da Pagare
+    val players: List<Player>,
+    val scores: List<Pair<Int, Int>> =  emptyList(),  //Burraco - Carte
     val round:Int = 0
 )
 {

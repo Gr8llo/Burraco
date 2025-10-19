@@ -1,8 +1,12 @@
 package com.burraco.app.ui.components
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,7 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -24,38 +28,64 @@ fun BurracoButton(
     modifier: Modifier = Modifier,
     text: String = "",
     enabled: Boolean = true,
-    onClick: ()->Unit,
+    large: Boolean = false,
+    onClick: () -> Unit,
     content: @Composable () -> Unit = {}
-){
+) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    Button(
-        modifier = modifier,
-        onClick = onClick,
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(15.dp),
-        interactionSource = interactionSource,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (isPressed) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary,
-            contentColor = if (isPressed) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onPrimary
+    // 1. Definisci l'animazione della scala
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f, // Rimpicciolisce al 95% quando premuto
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy, // Controlla il rimbalzo
+            stiffness = Spring.StiffnessLow // Controlla la velocità della "molla"
         ),
-        enabled = enabled
+        label = "BouncyButtonScale"
+    )
+    Box(
+        modifier = modifier
     ) {
-        Row(
-            modifier = modifier,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Button(
+            modifier = Modifier.graphicsLayer(
+                scaleX = scale,
+                scaleY = scale
+            ),
+            onClick = onClick,
+            contentPadding = if (large) PaddingValues(
+                horizontal = 25.dp,
+                vertical = 8.dp
+            ) else PaddingValues(
+                horizontal = 20.dp,
+                vertical = 5.dp
+            ),
+            shape = RoundedCornerShape(30.dp),
+            interactionSource = interactionSource,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isPressed) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary,
+                contentColor = if (isPressed) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onPrimary
+            ),
+            enabled = enabled
         ) {
-            if (text.isNotBlank()) {
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 28.sp,
-                )
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (text.isNotBlank()) {
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontSize = if (large) {
+                            30.sp
+                        } else {
+                            MaterialTheme.typography.bodyLarge.fontSize
+                        },
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+                content()
             }
-            content()
         }
     }
 }

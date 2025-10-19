@@ -1,106 +1,100 @@
 package com.burraco.app.ui.screen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.airbnb.lottie.compose.LottieConstants
 import com.burraco.app.R
-import com.burraco.app.navigation.Screen
-import com.burraco.app.ui.components.AnimationPlayer
+import com.burraco.app.navigation.SetupScreen
 import com.burraco.app.ui.components.BurracoButton
-import com.burraco.app.ui.components.TemporaryMessage
-import com.burraco.app.ui.theme.BurracoBlack
-import com.burraco.app.ui.theme.BurracoRed
-import com.burraco.app.ui.components.BackGroundImage
+import com.burraco.app.ui.uiEvent.BurracoEvent
+import com.burraco.app.ui.uiState.BurracoState
 
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    onNavigate: (String) -> Unit
+    state: BurracoState,
+    onEvent: (BurracoEvent) -> Unit,
+    onNavigate: (String) -> Unit,
 ) {
-    Box(
-        modifier = modifier.fillMaxSize()
-    ) {
-        BackGroundImage()
-        Image(
-            modifier = Modifier
-                .padding(15.dp)
-                .size(70.dp)
-                .align(Alignment.TopStart),
-            painter = painterResource(id = R.drawable.club),
-            contentDescription = "club",
-            colorFilter = ColorFilter.tint(BurracoBlack)
-        )
-        Image(
-            modifier = Modifier
-                .padding(15.dp)
-                .size(70.dp)
-                .align(Alignment.BottomEnd),
-            painter = painterResource(id = R.drawable.spade),
-            contentDescription = "spade",
-            colorFilter = ColorFilter.tint(BurracoBlack)
-        )
-        Image(
-            modifier = Modifier
-                .padding(15.dp)
-                .size(70.dp)
-                .align(Alignment.TopEnd),
-            painter = painterResource(id = R.drawable.diamond),
-            contentDescription = "diamond",
-            colorFilter = ColorFilter.tint(BurracoRed)
-        )
-        AnimationPlayer(
-            modifier = Modifier.size(150.dp).align(Alignment.BottomStart).absoluteOffset(y=(30).dp, x=(-20).dp),
-            animation = R.raw.heart_suit,
-            iteration = LottieConstants.IterateForever,
-            speed = 2f
-        )
-    }
-
     Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 30.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.weight(0.1f))
         Text(
             text = "Burraco",
-            style = MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.titleLarge,
         )
+        Box(
+            modifier = Modifier.weight(0.8f), //weight lavora sullo spazio rimanente dopo aver considerato il peso degli elementi che non hanno il modificatore weight
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.card),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.card_suits_playing),
+                    contentDescription = "Illustrazione di semi di carte che giocano",
+                    modifier = Modifier
+                        .weight(1f, fill = false)  //weight in verticale Colonna + fill=false -> Riserva lo spazio, ma non si "stira" per riempirlo
+                        .fillMaxWidth(0.8f),   //questo ovviamente sulla larghezza
+                    contentScale = ContentScale.Crop
+                )
 
-        Spacer(modifier = Modifier.height(90.dp))
+                Spacer(modifier = Modifier.weight(0.1f))
 
-        BurracoButton(onClick = { onNavigate(Screen.Player.route) }, text = "nuova partita") { }
-
-        Spacer(modifier = Modifier.height(15.dp))
-
-        var showMessage by remember { mutableStateOf(false) }
-
-        BurracoButton(onClick = { showMessage = true }, text = "storico") { }
-
-        TemporaryMessage(
-            message = "prossimamente",
-            visibility = showMessage,
-            resetVisibility = { showMessage = false })
+                if (state.showResume) {
+                    BurracoButton(
+                        text = "Riprendi Partita",
+                        enabled = true,
+                        onClick = { TODO() },
+                        large = true,
+                        modifier = Modifier.weight(0.2f)
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                }
+                BurracoButton(
+                    text = "Nuova Partita",
+                    enabled = true,
+                    onClick = { onNavigate(SetupScreen.Player.route) },
+                    large = !state.showResume,
+                )
+                Spacer(modifier = Modifier.height(1.dp))
+                BurracoButton(
+                    text = "Statistiche",
+                    enabled = true,
+                    onClick = { TODO() },
+                )
+            }
+        }
+        Spacer(modifier = Modifier.weight(0.1f))
     }
 }

@@ -1,133 +1,170 @@
 package com.burraco.app.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.burraco.app.data.GameSessionRepository
 import com.burraco.app.data.dao.PlayerDao
 import com.burraco.app.model.Team
 import com.burraco.app.ui.uiEvent.BurracoEvent
 import com.burraco.app.ui.uiState.BurracoState
+import com.burraco.app.ui.uiState.SortType
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class BurracoViewModel: ViewModel() {
-    // Stato interno modificabile solo dal ViewModel (lettura e scrittura)
-    private val _teams = MutableStateFlow<List<Team>>(emptyList())
-    private val _players = MutableStateFlow<List<String>>(emptyList())
+@HiltViewModel
+class BurracoViewModel @Inject constructor(
+    private val dao: PlayerDao,
+    private val repository: GameSessionRepository
+) : ViewModel() {
 
-    private val _currentRound = MutableStateFlow<Int>(0)
-
-    var firstRoundTo1000 = MutableStateFlow(0)
-
-    // Stato pubblico osservabile dalla UI (solo lettura)
-    val teams: StateFlow<List<Team>>  //i get non sono necessari
-        get() = _teams
-
-    val players: StateFlow<List<String>>
-        get() = _players
-
-    val size = _teams.value.size
-
-    val currentRound: StateFlow<Int> = _currentRound
-
-    fun addTeam(teamName: String, players: List<String>){
-        if(teamName in _teams.value.map { it.name })
-            return
-        val newTeam = Team(players = players, name = teamName)
-        players.forEach { player -> addPlayer(player) }
-        _teams.value = _teams.value + newTeam // ✅ crea una nuova lista e la assegna
-    }
-
-    fun getTeamByName(name: String): Team? {
-        return _teams.value.find { it.name == name }
-    }
-
-    fun addPlayer(name: String){
-        if(name in _players.value)
-            return
-        _players.value = _players.value + listOf(name)
-    }
-
-    fun addScore(teamName: String, points: Pair<Int, Int>) {
-        val roundIndex = _currentRound.value -1
-
-        _teams.value = _teams.value.map { team ->
-            if (team.name == teamName) {
-                Log.d("ViewModelLog", "Attempting to add score ${team.scores} to team $teamName")
-                val updatedScores = team.scores.toMutableList()
-
-                // Se la lista è più corta del round corrente, la estendo
-                while (updatedScores.size <= roundIndex) {
-                    updatedScores.add(Pair(0, 0)) // valore placeholder
-                }
-                // Inseririmento punteggio al round corrente
-                updatedScores[roundIndex] = points
-
-                team.copy(scores = updatedScores, round = _currentRound.value)
-            } else {
-                team
-            }
-        }
-    }
-
-    fun nextRound(){
-        _currentRound.value++
-    }
-
-    fun resetTeam(){
-        _teams.value = emptyList<Team>()
-    }
-
-    fun resetScore(){
-        _teams.value = _teams.value.map{ team ->
-            team.copy(scores = emptyList())
-        }
-    }
-}
-
-class BurracoViewModel2(
-    private val dao: PlayerDao
-): ViewModel(){
     private val _state = MutableStateFlow(BurracoState())
+    private val _sortType = MutableStateFlow(SortType.LAST_PLAY)
 
-    fun onEvent(event: BurracoEvent){
-        when(event){
-            is BurracoEvent.addTeam -> {
-                _state.update {
-                    it.copy(
-                        teams = _state.value.teams + Team(
-                            event.teamName,
-                            players = event.players
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val _players = _sortType.flatMapLatest { sortType ->
+        when (sortType) {
+            SortType.LAST_PLAY -> dao.getPlayerByLastTimePlayed()
+            SortType.MATCH_WON -> dao.getPlayerByMatchWon()
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    //getAllPlayers è un flow quindi quando cambia viene cambiato automaticamente
+    //uno StateFlow immutabile, così non può essere modificato dall'esterno.
+
+    val state = combine(_state, _players) { state, players ->
+        state.copy(
+            allPlayers = players
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), BurracoState())
+
+    fun onEvent(event: BurracoEvent) {
+        when (event) {
+            is BurracoEvent.ShowAddPlayer -> _state.update {
+                it.copy(showAddPlayer = true)
+            }
+
+            is BurracoEvent.HideAddPlayer -> _state.update {
+                it.copy(showAddPlayer = false)
+            }
+
+            is BurracoEvent.AddPLayer -> viewModelScope.launch {
+                try {
+                    dao.insertPlayer(event.player.copy(name = event.player.name.lowercase()))
+                    _state.update {
+                        it.copy(
+                            showErrorDialog = false,
+                            errorMessage = null
                         )
-                    )
-                }
-            //non riaggiungo i giocatori perchè già aggiunti nella pagina precedente
-            }
-            is BurracoEvent.addPlayer -> {
-                _state.update{
-                    it.copy(
-                        players = _state.value.players + event.name
-                    )
+                    }//per sicurezza pulisco i messagi di errore
+                } catch (exception: Exception) {
+                    val isUniqueConstraintError =
+                        exception.message?.contains("UNIQUE constraint failed", ignoreCase = true)
+                            ?: false//ignore case serve per non fare distinzione tra maiuscole e minuscole
+
+                    if (isUniqueConstraintError) {
+                        _state.update {
+                            it.copy(
+                                errorMessage = "Nome giocatore già esistente",
+                                showErrorDialog = true,
+                            )
+                        }
+                    } else {
+                        _state.update {
+                            it.copy(
+                                errorMessage = "Errore sconosciuto",
+                                showErrorDialog = true,
+                            )
+                        }
+                    }
                 }
             }
 
-            is BurracoEvent.addScore -> TODO()
-            is BurracoEvent.nextRound -> {
-                _state.update {
-                    it.copy(
-                        currentRound = _state.value.currentRound+1
-                    )
+            is BurracoEvent.ShowRemovePlayer -> _state.update {
+                it.copy(showRemovePlayer = true)
+            }
+
+            is BurracoEvent.HideRemovePlayer -> _state.update {
+                it.copy(showRemovePlayer = false)
+            }
+
+            is BurracoEvent.RemovePlayer -> viewModelScope.launch {
+                dao.deletePlayer(event.player)
+            }
+
+            is BurracoEvent.OnPlayerSelected -> {
+                if (_state.value.selectedPlayers.contains(event.player)) {
+                    _state.update {
+                        it.copy(
+                            selectedPlayers = it.selectedPlayers - event.player
+                        )
+                    }
+                } else if (_state.value.selectedPlayers.size < 4) {
+                    _state.update {
+                        it.copy(
+                            selectedPlayers = it.selectedPlayers + event.player
+                        )
+                    }
                 }
             }
-            BurracoEvent.resetScore -> TODO()
-            is BurracoEvent.resetTeam -> {
+
+            is BurracoEvent.MatchPlayersConfirmed -> {
+                val players = _state.value.selectedPlayers
+
+                viewModelScope.launch {
+                    delay(2000)
+                    players.forEach { player ->
+                        dao.updatePlayer(
+                            player.copy(
+                                lastPlayed = System.currentTimeMillis()
+                            )
+                        )
+                    }
+                }
+
+                players.forEach { player -> repository.addPlayer(player) }
+                if (players.size < 4) {
+                    _state.update {
+                        it.copy(
+                            teams = players.map { player ->
+                                Team(
+                                    name = player.name,
+                                    players = listOf(player),
+                                )
+                            }
+                        )
+                    }
+
+                    if (repository.currentTeams.value.isNotEmpty()) repository.clearTeam()
+
+                    players.forEach { player ->
+                        repository.addTeam(
+                            Team(
+                                name = player.name,
+                                players = listOf(player),
+                            )
+                        )
+                    }
+                }
+            }
+
+            is BurracoEvent.OnResume -> TODO()
+            is BurracoEvent.SortPlayer -> _sortType.value = event.sortType
+            is BurracoEvent.HideErrorMessage -> {
                 _state.update {
                     it.copy(
-                        teams = emptyList()
+                        showErrorDialog = false,
+                        errorMessage = null
                     )
                 }
             }
         }
     }
-
 }

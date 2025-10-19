@@ -17,13 +17,13 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color.Red,
+    primary = BurracoRed,
     secondary = Color.LightGray,
     tertiary = Pink40,
-    background = Color(0xFFFDF2C6),
-    surface = Color(0xFFFCF7EF),
+    background = Color(0xFFFFF7DB),
+    surface = Color(0xFFDCDBC4),
     onPrimary = Color.White,
-    onSecondary = Color.Black,
+    onSecondary = BurracoBlack,
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
     surface = Color(0xFFFFFBFE),

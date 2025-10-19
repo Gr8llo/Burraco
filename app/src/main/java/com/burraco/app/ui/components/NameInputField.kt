@@ -20,7 +20,6 @@ import com.burraco.app.ui.theme.BurracoRed
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -29,13 +28,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import com.burraco.app.ui.theme.BurracoBlack
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
 
 @Composable
 fun NameInputField(
     modifier: Modifier = Modifier,
-    onDone: (String) -> Unit
+    onClick: (String) -> Unit
 ) {
     var newPlayer by rememberSaveable { mutableStateOf("") }
     var isError by rememberSaveable { mutableStateOf(true) }
@@ -45,7 +42,7 @@ fun NameInputField(
     val onButtonPressed: () -> Unit = {
         when {
             newPlayer.isNotBlank() && !isError -> {
-                onDone(newPlayer)
+                onClick(newPlayer)
                 newPlayer = ""
                 focusManager.clearFocus()
             }
@@ -53,7 +50,7 @@ fun NameInputField(
     }
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -62,37 +59,26 @@ fun NameInputField(
             onValueChange = {
                 if (it.length <= 13) {
                     newPlayer = it
-                    isError = if (it.length > 12 || it.length == 0) true else false
+                    isError = (it.length > 12 || it.isEmpty())
                 }
             },
             label = {
                 Text(
-                    text = "Giocatore",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontSize = 25.sp,
-                        fontWeight = FontWeight.Light,
-                        background = Color.Transparent
-                    )
+                    text = "Nome",
+                    style = MaterialTheme.typography.labelSmall
                 )
             },
-            enabled = true,
             isError = isError,
             supportingText = {
                 when {
                     newPlayer.length > 12 -> Text(
                         text = "numero massimo di caratteri raggiunto",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Light
-                        )
+                        style = MaterialTheme.typography.labelSmall
                     )
 
                     newPlayer.isBlank() -> Text(
                         text = "inserisci un nome",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Light
-                        )
+                        style = MaterialTheme.typography.labelSmall
                     )
                 }
             },
@@ -136,7 +122,7 @@ fun NameInputField(
             enter = fadeIn(animationSpec = tween(500)),
             exit = fadeOut(animationSpec = tween(500))
         ) {
-            BurracoButton (text="OK", onClick = {onButtonPressed()}, modifier = Modifier.height(50.dp))
+            BurracoButton (text="OK", onClick = {onButtonPressed()})
         }
     }
 }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
@@ -27,9 +28,9 @@ import androidx.compose.ui.unit.dp
 fun Modifier.adjustedModifier(): Modifier {
     val configuration = LocalConfiguration.current
     return if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
-        this
+        this.navigationBarsPadding()
     else
-        this.padding(WindowInsets.displayCutout.asPaddingValues())
+        this.padding(WindowInsets.displayCutout.asPaddingValues()).navigationBarsPadding()
 }
 
 @Composable

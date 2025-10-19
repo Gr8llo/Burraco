@@ -27,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
@@ -38,152 +37,147 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.burraco.app.model.Team
 import com.burraco.app.R
-import com.burraco.app.navigation.GameGroupScreen
 import com.burraco.app.ui.theme.BurracoBlack
 import com.burraco.app.ui.theme.BurracoRed
-import com.burraco.app.ui.util.absoluteSafeOffsetY
-import com.burraco.app.viewmodel.GameScreenViewModel
 
 @Composable
 fun TeamPointsColumn(
-    team: Team,
     modifier: Modifier = Modifier,
-    gameScreenViewModel: GameScreenViewModel,
+    team: Team,
     isLast: Boolean = false,
-    onNavigate: (String) -> Unit
 ) {
-    val firstRoundTo1000 by gameScreenViewModel.firstRoundTo1000.collectAsState()
-    val currentRound by gameScreenViewModel.currentRound.collectAsState()
-    val firstTeamToDealCards by gameScreenViewModel.firstTeamToDealCards.collectAsState()
-
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box {
-            Text(
-                text = team.name,
-                style = MaterialTheme.typography.titleLarge.copy(fontSize = 35.sp),
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .clickable(
-                        enabled = true,
-                        onClick = { gameScreenViewModel.firstTeamToDealCards.value = team.name },
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() },
-                    )
-            )
-            if (firstTeamToDealCards == team.name) {
-                Icon(
-                    painter = painterResource(R.drawable.heart),
-                    tint = BurracoRed,
-                    modifier = Modifier.size(20.dp).absoluteOffset(x=(-5).dp),
-                    contentDescription = "segno per chi da le carte"
-                )
-            }
-        }
-        HorizontalDivider(
-            modifier = Modifier
-                .fillMaxWidth(),
-            thickness = 2.dp,
-            color = Color.Gray
-        )
-
-        team.scores.forEachIndexed { index, score ->
-            RoundRow(
-                score = score,
-                firstRoundTo1000 = (index + 1) == firstRoundTo1000
-            )
-        }
-
-        if (team.round < currentRound) ShowInputBox(onClick = {
-            onNavigate(GameGroupScreen.ScoreEntry.route + "/${team.name}")
-        })
-        else ShowTotalScore(team = team, onNavigate = onNavigate)
-
-        Spacer(
-            Modifier
-                .height(0.dp)
-                .onGloballyPositioned { coordinates ->
-                    gameScreenViewModel.lastRowPos.value = coordinates.positionInWindow()
-                }
-        )
-    }
-
-    if (!isLast) VerticalDivider(
-        modifier = Modifier
-            .fillMaxHeight(0.98f),
-        color = Color.Gray,
-        thickness = 2.dp
-    )
+//    val firstRoundTo1000 by gameScreenViewModel.firstRoundTo1000.collectAsState()
+//    val currentRound by gameScreenViewModel.currentRound.collectAsState()
+//    val firstTeamToDealCards by gameScreenViewModel.firstTeamToDealCards.collectAsState()
+//
+//    Column(
+//        modifier = modifier,
+//        verticalArrangement = Arrangement.Top,
+//        horizontalAlignment = Alignment.CenterHorizontally
+//    ) {
+//        Box {
+//            Text(
+//                text = team.name,
+//                style = MaterialTheme.typography.titleLarge.copy(fontSize = 35.sp),
+//                overflow = TextOverflow.Ellipsis,
+//                maxLines = 1,
+//                modifier = Modifier
+//                    .padding(horizontal = 8.dp)
+//                    .clickable(
+//                        enabled = true,
+//                        onClick = { gameScreenViewModel.firstTeamToDealCards.value = team.name },
+//                        indication = null,
+//                        interactionSource = remember { MutableInteractionSource() },
+//                    )
+//            )
+//            if (firstTeamToDealCards == team.name) {
+//                Icon(
+//                    painter = painterResource(R.drawable.heart),
+//                    tint = BurracoRed,
+//                    modifier = Modifier.size(20.dp).absoluteOffset(x=(-5).dp),
+//                    contentDescription = "segno per chi da le carte"
+//                )
+//            }
+//        }
+//        HorizontalDivider(
+//            modifier = Modifier
+//                .fillMaxWidth(),
+//            thickness = 2.dp,
+//            color = Color.Gray
+//        )
+//
+//        team.scores.forEachIndexed { index, score ->
+//            RoundRow(
+//                score = score,
+//                firstRoundTo1000 = (index + 1) == firstRoundTo1000
+//            )
+//        }
+//
+//        if (team.round < currentRound) ShowInputBox(onClick = {
+//            onNavigate(GameScreen.ScoreEntry.route + "/${team.name}")
+//        })
+//        else ShowTotalScore(team = team, onNavigate = onNavigate)
+//
+//        Spacer(
+//            Modifier
+//                .height(0.dp)
+//                .onGloballyPositioned { coordinates ->
+//                    gameScreenViewModel.lastRowPos.value = coordinates.positionInWindow()
+//                }
+//        )
+//    }
+//
+//    if (!isLast) VerticalDivider(
+//        modifier = Modifier
+//            .fillMaxHeight(0.98f),
+//        color = Color.Gray,
+//        thickness = 2.dp
+//    )
 }
 
 
-@Composable
-fun ShowTotalScore(
-    modifier: Modifier = Modifier,
-    team: Team,
-    onNavigate: (String) -> Unit
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(end = 15.dp)
-    ) {
-        Text(
-            text = team.totalScore.toString(),
-            fontWeight = FontWeight.Bold,
-            color = when {
-                team.totalScore < 0 -> BurracoRed
-                team.totalScore >= 2005 -> Color(0xFFCEB12C)
-                else -> BurracoBlack
-            },
-            modifier = Modifier.align(Alignment.Center)
-        )
-
-        if (team.round != 0) {
-            Icon(
-                painter = painterResource(R.drawable.edit_note_icon),
-                tint = BurracoRed,
-                modifier = Modifier
-                    .size(40.dp)
-                    .align(Alignment.CenterEnd)
-                    .clickable {
-                        onNavigate(GameGroupScreen.ScoreEntry.route + "/${team.name}")
-                    },
-                contentDescription = "edit"
-            )
-        }
-    }
-}
-
-@Composable
-fun ShowInputBox(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Spacer(Modifier.height(10.dp))
-
-    Box(
-        modifier = Modifier
-            .clickable(
-                true,
-                onClickLabel = "inserisci qui i punti",  //descrive l'azione testualemente (per i non vedenti)
-                onClick = onClick
-            )
-            .clip(RoundedCornerShape(10.dp))
-            .background(Color.LightGray.copy(alpha = 1f))
-            .fillMaxWidth(0.9f)
-            .height(80.dp)
-    ) {
-        Text(
-            text = "",
-            modifier = Modifier.align(Alignment.Center),
-            color = Color.White
-        )
-    }
-}
+//@Composable
+//fun ShowTotalScore(
+//    modifier: Modifier = Modifier,
+//    team: Team,
+//    onNavigate: (String) -> Unit
+//) {
+//    Box(
+//        modifier = modifier
+//            .fillMaxWidth()
+//            .wrapContentHeight()
+//            .padding(end = 15.dp)
+//    ) {
+//        Text(
+//            text = team.totalScore.toString(),
+//            fontWeight = FontWeight.Bold,
+//            color = when {
+//                team.totalScore < 0 -> BurracoRed
+//                team.totalScore >= 2005 -> Color(0xFFCEB12C)
+//                else -> BurracoBlack
+//            },
+//            modifier = Modifier.align(Alignment.Center)
+//        )
+//
+//        if (team.round != 0) {
+//            Icon(
+//                painter = painterResource(R.drawable.edit_note_icon),
+//                tint = BurracoRed,
+//                modifier = Modifier
+//                    .size(40.dp)
+//                    .align(Alignment.CenterEnd)
+//                    .clickable {
+//                        onNavigate(GameScreen.ScoreEntry.route + "/${team.name}")
+//                    },
+//                contentDescription = "edit"
+//            )
+//        }
+//    }
+//}
+//
+//@Composable
+//fun ShowInputBox(
+//    modifier: Modifier = Modifier,
+//    onClick: () -> Unit
+//) {
+//    Spacer(Modifier.height(10.dp))
+//
+//    Box(
+//        modifier = Modifier
+//            .clickable(
+//                true,
+//                onClickLabel = "inserisci qui i punti",  //descrive l'azione testualemente (per i non vedenti)
+//                onClick = onClick
+//            )
+//            .clip(RoundedCornerShape(10.dp))
+//            .background(Color.LightGray.copy(alpha = 1f))
+//            .fillMaxWidth(0.9f)
+//            .height(80.dp)
+//    ) {
+//        Text(
+//            text = "",
+//            modifier = Modifier.align(Alignment.Center),
+//            color = Color.White
+//        )
+//    }
+//}

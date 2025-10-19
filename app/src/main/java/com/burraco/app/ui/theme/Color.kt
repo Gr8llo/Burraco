@@ -9,6 +9,6 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
-val BurracoBlack = Color(0xFF1F1E1E)
+val BurracoBlack = Color(0xFF554735)
 
-val BurracoRed = Color(0xFFD23333)
+val BurracoRed = Color(0xFFE53B3B)

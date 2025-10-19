@@ -3,6 +3,7 @@ package com.burraco.app
 import android.content.Context
 import androidx.room.Room
 import com.burraco.app.data.BurracoDatabase
+import com.burraco.app.data.GameSessionRepository
 import com.burraco.app.data.dao.PlayerDao
 import dagger.Module
 import dagger.Provides
@@ -23,14 +24,19 @@ object AppModule {   //rispetto a class può essere creato una sola volta + non 
             context,
             BurracoDatabase::class.java,
             "burraco.db"
-        )
-            .build()
+        ).build()
     }
 
     // Aggiungi un "provider" anche per ogni DAO
     @Provides
     @Singleton
     fun providePlayerDao(database: BurracoDatabase): PlayerDao {
-        return database.playerDao() // Assumendo che tu abbia un metodo playerDao() in BurracoDatabase
+        return database.playerDao()
+    }
+
+    @Provides
+    @Singleton
+    fun providesGameSessionRepository(): GameSessionRepository{
+        return GameSessionRepository()
     }
 }
