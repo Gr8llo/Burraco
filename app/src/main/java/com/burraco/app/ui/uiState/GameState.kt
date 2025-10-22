@@ -10,7 +10,7 @@ data class GameUiState(
 )
 
 data class GameState(
-    val teams: List<Team> = emptyList<Team>(),
+    val teams: List<Team> = emptyList(),
     val currentRound: Int = 0,
     val firstRoundTo1000: Int? = null,   //attivo solo in tre giocatori
     val firstTeamToDealCard: Team? = null,

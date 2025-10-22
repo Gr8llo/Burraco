@@ -14,7 +14,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -34,19 +33,19 @@ import com.burraco.app.ui.theme.BurracoRed
 
 @Composable
 fun PointsInputField(
-    team: Team?,
+    team: Team,
     currentRound: Int,
     onPointsConfirmed: (String, Int, Int) -> Unit
 ) {
 
     var burracoPoints by rememberSaveable {
         mutableStateOf(
-            team?.getScoreRound(currentRound)?.first?.toString() ?: ""
+            team.getScoreRound(currentRound)?.first?.toString() ?: ""
         )
     }
     var cardPoints by rememberSaveable {
         mutableStateOf(
-            team?.getScoreRound(currentRound)?.second?.toString() ?: ""
+            team.getScoreRound(currentRound)?.second?.toString() ?: ""
         )
     }
 
@@ -180,6 +179,6 @@ fun String.isValidPoint(): Boolean {
         (this.toIntOrNull() ?: 0) >= 1500 -> false
         (this.toIntOrNull() ?: 0) <= -1500 -> false
         this.any { !it.isDigit() && it != '-' } -> false
-         else -> true
+        else -> true
     }
 }

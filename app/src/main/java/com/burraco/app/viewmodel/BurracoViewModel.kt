@@ -10,7 +10,6 @@ import com.burraco.app.ui.uiState.BurracoState
 import com.burraco.app.ui.uiState.SortType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -66,8 +65,11 @@ class BurracoViewModel @Inject constructor(
                     }//per sicurezza pulisco i messagi di errore
                 } catch (exception: Exception) {
                     val isUniqueConstraintError =
-                        exception.message?.contains("UNIQUE constraint failed", ignoreCase = true)
-                            ?: false//ignore case serve per non fare distinzione tra maiuscole e minuscole
+                        exception.message?.contains(
+                            "UNIQUE constraint failed",
+                            ignoreCase = true
+                        ) //ignore case serve per non fare distinzione tra maiuscole e minuscole
+                            ?: false
 
                     if (isUniqueConstraintError) {
                         _state.update {
@@ -115,35 +117,13 @@ class BurracoViewModel @Inject constructor(
                 }
             }
 
-            is BurracoEvent.MatchPlayersConfirmed -> {
+            is BurracoEvent.OnMatchPlayersConfirmed -> {
                 val players = _state.value.selectedPlayers
 
-                viewModelScope.launch {
-                    delay(2000)
-                    players.forEach { player ->
-                        dao.updatePlayer(
-                            player.copy(
-                                lastPlayed = System.currentTimeMillis()
-                            )
-                        )
-                    }
-                }
+                if (repository.currentTeams.value.isNotEmpty()) repository.clearTeam()
 
                 players.forEach { player -> repository.addPlayer(player) }
                 if (players.size < 4) {
-                    _state.update {
-                        it.copy(
-                            teams = players.map { player ->
-                                Team(
-                                    name = player.name,
-                                    players = listOf(player),
-                                )
-                            }
-                        )
-                    }
-
-                    if (repository.currentTeams.value.isNotEmpty()) repository.clearTeam()
-
                     players.forEach { player ->
                         repository.addTeam(
                             Team(
@@ -152,7 +132,53 @@ class BurracoViewModel @Inject constructor(
                             )
                         )
                     }
+                } else {
+                    viewModelScope.launch {
+                        _state.update {
+                            it.copy(
+                                playersWithoutTeam = _state.value.selectedPlayers,
+                                playersWithTeam = emptyList()  //pulisco eventuali residui
+                            )
+                        }
+                    }
                 }
+            }
+
+            is BurracoEvent.OnTeamSelected -> {
+                if (_state.value.playersWithoutTeam.contains(event.player)) {  // NO IN, valori in memoria diversi -> contains verifica i parametri
+                    _state.update {
+                        it.copy(
+                            playersWithoutTeam = _state.value.playersWithoutTeam - event.player,
+                            playersWithTeam = _state.value.playersWithTeam + event.player
+                        )
+                    }
+                } else if (_state.value.playersWithTeam.contains(event.player)) {
+                    _state.update {
+                        it.copy(
+                            playersWithoutTeam = _state.value.playersWithoutTeam + event.player,
+                            playersWithTeam = _state.value.playersWithTeam - event.player
+                        )
+                    }
+                }
+            }
+
+            is BurracoEvent.OnMatchTeamsConfirmed -> {
+
+                if (repository.currentTeams.value.isNotEmpty()) repository.clearTeam()  //per evitare traccie di dati vecchi
+
+                val players = _state.value.playersWithTeam
+                repository.addTeam(
+                    Team(
+                        players = listOf(players[0], players[1]),
+                        name = "${ players[0].name } & ${ players[1].name }",
+                    )
+                )
+                repository.addTeam(
+                    Team(
+                        players = listOf(players[2], players[3]),
+                        name = "${ players[2].name } & ${ players[3].name }",
+                    )
+                )
             }
 
             is BurracoEvent.OnResume -> TODO()

@@ -30,7 +30,7 @@ fun BurracoButton(
     enabled: Boolean = true,
     large: Boolean = false,
     onClick: () -> Unit,
-    content: @Composable () -> Unit = {}
+    content: @Composable () -> Unit = {},
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -75,11 +75,11 @@ fun BurracoButton(
                 if (text.isNotBlank()) {
                     Text(
                         text = text,
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontSize = if (large) {
                             30.sp
                         } else {
-                            MaterialTheme.typography.bodyLarge.fontSize
+                            MaterialTheme.typography.bodyMedium.fontSize
                         },
                         color = MaterialTheme.colorScheme.onPrimary
                     )

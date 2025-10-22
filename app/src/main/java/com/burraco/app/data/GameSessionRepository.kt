@@ -32,12 +32,16 @@ class GameSessionRepository @Inject constructor() {
         }
     }
 
+    fun clearPlayer(){
+        _currentPlayers.value = listOf()
+    }
+
     fun addTeam(team: Team){
         _currentTeams.value += team
     }
 
     fun clearTeam(){
-        _currentTeams.value = emptyList<Team>()
+        _currentTeams.value = emptyList()
     }
 
     fun updateRoundPoints(team: Team, points: Pair<Int,Int>){
@@ -61,8 +65,8 @@ class GameSessionRepository @Inject constructor() {
     }
 
     fun clearSession() {
-        _currentTeams.value = emptyList<Team>()
-        _currentPlayers.value = emptyList<Player>()
+        _currentTeams.value = emptyList()
+        _currentPlayers.value = emptyList()
         _currentRound.value = 0
     }
 }

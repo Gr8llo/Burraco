@@ -1,16 +1,7 @@
 package com.burraco.app.ui.screen
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -32,13 +22,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -48,14 +33,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.zIndex
 import com.burraco.app.R
 import com.burraco.app.data.entity.Player
 import com.burraco.app.navigation.Screen
 import com.burraco.app.navigation.SetupScreen
 import com.burraco.app.ui.components.BurracoButton
+import com.burraco.app.ui.components.GridGradient
 import com.burraco.app.ui.components.NameInputField
+import com.burraco.app.ui.components.PlayerCard
 import com.burraco.app.ui.theme.BurracoBlack
+import com.burraco.app.ui.theme.BurracoCardColor
 import com.burraco.app.ui.theme.BurracoRed
 import com.burraco.app.ui.uiEvent.BurracoEvent
 import com.burraco.app.ui.uiState.BurracoState
@@ -87,7 +74,7 @@ fun PlayerSelectionScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Box(
-            // Usiamo un Box per sovrapporre la griglia e la sfumatura
+            //Box per sovrapporre la griglia e la sfumatura
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(0.75f)
@@ -105,7 +92,7 @@ fun PlayerSelectionScreen(
                         onClick = { player ->
                             onEvent(BurracoEvent.OnPlayerSelected(player))
                         },
-                        selected = player in state.selectedPlayers,
+                        color = if (player in state.selectedPlayers) BurracoCardColor.BLUE else BurracoCardColor.BLACK,
                         showRemovePlayer = state.showRemovePlayer,
                         onDelete = { player ->
                             onEvent(BurracoEvent.RemovePlayer(player))
@@ -128,9 +115,9 @@ fun PlayerSelectionScreen(
             if (!state.showRemovePlayer) {
                 Text(
                     modifier = Modifier.padding(top = 15.dp, bottom = 5.dp),
-                    text = "Clicca per selezionare i giocatori (puoi scorrere)",
+                    text = "Clicca per selezionare i giocatori",
                     style = MaterialTheme.typography.labelSmall,
-                    color = BurracoRed,
+                    color = BurracoBlack,
                     textAlign = TextAlign.Center
                 )
             }
@@ -185,7 +172,7 @@ fun PlayerSelectionScreen(
                         // Bottone "Conferma"
                         BurracoButton(
                             onClick = {
-                                onEvent(BurracoEvent.MatchPlayersConfirmed)
+                                onEvent(BurracoEvent.OnMatchPlayersConfirmed)
                                 if(state.selectedPlayers.size < 4){
                                     onNavigate(Screen.GameRoot.route)
                                 }
@@ -224,123 +211,6 @@ fun PlayerSelectionScreen(
             onDismiss = { onEvent(BurracoEvent.HideErrorMessage) },
             errorMessage = state.errorMessage ?: ""
         )
-    }
-}
-
-@Composable
-fun GridGradient(modifier: Modifier, reversed: Boolean = false) {
-
-    val gradient = if (!reversed) {
-        Brush.verticalGradient(
-            colors = listOf(
-                Color.Transparent,
-                MaterialTheme.colorScheme.background
-            ), // Da trasparente a colore di sfondo
-        )
-    } else {
-        Brush.verticalGradient(
-            colors = listOf(
-                MaterialTheme.colorScheme.background,
-                Color.Transparent,
-            ),
-        )
-    }
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(40.dp)
-            .background(
-                brush = gradient
-            )
-    )
-}
-
-@Composable
-fun PlayerCard(
-    player: Player,
-    onClick: (Player) -> Unit,
-    selected: Boolean,
-    showRemovePlayer: Boolean,
-    onDelete: (Player) -> Unit
-
-) {
-    val infiniteTransition = rememberInfiniteTransition(label = "shake_animation")
-    val shakeAngle by infiniteTransition.animateFloat(
-        initialValue = -8f,
-        targetValue = 8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 250,
-                easing = LinearEasing
-            ),
-            repeatMode = RepeatMode.Reverse // Inverte la direzione dell'animazione ad ogni ciclo
-        ),
-        label = "shake_angle"
-    )
-
-    val interactionSource = remember { MutableInteractionSource() }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .clickable { onClick(player) },
-        contentAlignment = Alignment.Center,
-    ) {
-        if (showRemovePlayer) {
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.bin_icon),
-                contentDescription = "Rimuovi giocatore",
-                tint = BurracoRed,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 9.dp, end = 8.dp)
-                    .size(40.dp)
-                    .clickable(
-                        onClick = { onDelete(player) },
-                        interactionSource = interactionSource,
-                        indication = null
-                    )
-                    .zIndex(2f)
-                    .graphicsLayer(rotationZ = shakeAngle)
-            )
-        }
-
-        if (selected) {
-            Image(
-                painter = painterResource(R.drawable.blue_card),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-            )
-        } else {
-            Image(
-                painter = painterResource(R.drawable.card),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-            )
-        }
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Image(
-                painter = painterResource(R.drawable.spade),
-                contentDescription = null,
-                modifier = Modifier.fillMaxWidth(0.6f),
-                contentScale = ContentScale.Crop,
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                modifier = Modifier.padding(horizontal = 10.dp),
-                text = player.name.replaceFirstChar { it.uppercase() },
-                style = MaterialTheme.typography.bodyMedium,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-            )
-        }
     }
 }
 

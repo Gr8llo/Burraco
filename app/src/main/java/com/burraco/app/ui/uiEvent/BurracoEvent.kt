@@ -12,7 +12,9 @@ sealed interface BurracoEvent {
     object ShowRemovePlayer : BurracoEvent
     data class RemovePlayer(val player: Player) : BurracoEvent
     object HideRemovePlayer : BurracoEvent
-    object MatchPlayersConfirmed : BurracoEvent
+    object OnMatchPlayersConfirmed : BurracoEvent
+    data class OnTeamSelected(val player: Player): BurracoEvent
+    object OnMatchTeamsConfirmed : BurracoEvent
     data class SortPlayer(val sortType: SortType): BurracoEvent
     object HideErrorMessage: BurracoEvent
     //data class onTeamSelected(val player: Player): BurracoEvent

@@ -1,15 +1,11 @@
 package com.burraco.app.ui.theme
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.burraco.app.R
 
 val Fredoka = FontFamily(
@@ -25,8 +21,9 @@ val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = Fredoka,
         fontWeight = FontWeight.Bold,
-        fontSize = 20.sp,
+        fontSize = 30.sp,
         letterSpacing = 0.sp,
+        color = BurracoBlack
     ),
 
     titleLarge = TextStyle(
@@ -48,13 +45,15 @@ val Typography = Typography(
     labelMedium = TextStyle(
         fontFamily = Fredoka,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 15.sp,
+        fontSize = 19.sp,
+        color = BurracoBlack
     ) ,
 
     labelSmall = TextStyle(
         fontFamily = Fredoka,
         fontWeight = FontWeight.Normal,
-        fontSize = 15.sp,
+        fontSize = 18.sp,
+        color = BurracoBlack
     )
 
 )

@@ -4,7 +4,7 @@ import com.burraco.app.data.entity.Player
 
 data class Team(
     val name: String,
-    val players: List<Player>,
+    val players: List<Player> = emptyList(),
     val scores: List<Pair<Int, Int>> =  emptyList(),  //Burraco - Carte
     val round:Int = 0
 )
