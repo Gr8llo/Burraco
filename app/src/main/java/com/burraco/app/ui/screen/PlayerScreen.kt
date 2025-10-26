@@ -2,6 +2,8 @@ package com.burraco.app.ui.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +24,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -44,6 +52,7 @@ import com.burraco.app.ui.components.PlayerCard
 import com.burraco.app.ui.theme.BurracoBlack
 import com.burraco.app.ui.theme.BurracoCardColor
 import com.burraco.app.ui.theme.BurracoRed
+import com.burraco.app.ui.theme.PlayerAvatar
 import com.burraco.app.ui.uiEvent.BurracoEvent
 import com.burraco.app.ui.uiState.BurracoState
 
@@ -173,10 +182,9 @@ fun PlayerSelectionScreen(
                         BurracoButton(
                             onClick = {
                                 onEvent(BurracoEvent.OnMatchPlayersConfirmed)
-                                if(state.selectedPlayers.size < 4){
+                                if (state.selectedPlayers.size < 4) {
                                     onNavigate(Screen.GameRoot.route)
-                                }
-                                else{
+                                } else {
                                     onNavigate(SetupScreen.Team.route)
                                 }
                             },
@@ -200,13 +208,13 @@ fun PlayerSelectionScreen(
     if (state.showAddPlayer) {
         PlayerDialog(
             onDismiss = { onEvent(BurracoEvent.HideAddPlayer) },
-            onDone = {
-                onEvent(BurracoEvent.AddPLayer(Player(name = it)))
+            onDone = { name, avatar ->
+                onEvent(BurracoEvent.AddPLayer(Player(name = name, avatar = avatar)))
                 onEvent(BurracoEvent.HideAddPlayer)
             }
         )
     }
-    if(state.showErrorDialog){
+    if (state.showErrorDialog) {
         ErrorDialog(
             onDismiss = { onEvent(BurracoEvent.HideErrorMessage) },
             errorMessage = state.errorMessage ?: ""
@@ -217,8 +225,12 @@ fun PlayerSelectionScreen(
 @Composable
 fun PlayerDialog(
     onDismiss: () -> Unit,
-    onDone: (String) -> Unit
+    onDone: (String, PlayerAvatar) -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    var playerAvatarIndex by rememberSaveable { mutableIntStateOf(0) }
+    val allAvatar = remember { PlayerAvatar.entries.toTypedArray() }  // è uguale a fare PlayerAvatar.values() ma è più moderno
+
     Dialog(
         onDismissRequest = { onDismiss() },
     ) {
@@ -250,16 +262,21 @@ fun PlayerDialog(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Image(
-                        painterResource(R.drawable.spade),
+                        painter = allAvatar[playerAvatarIndex].painter,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .fillMaxWidth(0.6f)
                             .wrapContentHeight()
+                            .clickable(
+                                onClick = { playerAvatarIndex = (playerAvatarIndex + 1) % allAvatar.size },
+                                interactionSource = interactionSource,
+                                indication = null
+                            ),
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     NameInputField(
-                        onClick = onDone
+                        onClick = {name -> onDone(name, allAvatar[playerAvatarIndex])}
                     )
                 }
             }

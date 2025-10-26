@@ -1,5 +1,6 @@
 package com.burraco.app.ui.screen
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +37,20 @@ import com.burraco.app.ui.theme.BurracoTheme
 import com.burraco.app.ui.uiEvent.BurracoEvent
 import com.burraco.app.ui.uiState.BurracoState
 
+
+val offsetAmount: List<List<Int>> = listOf(
+    listOf(0),     //1 giocatori
+    listOf(-25, 25),     //2 giocatore
+    listOf(-50, 0, 50),     //3 giocatori
+    listOf(-65, -25, 25, 75),     //4 giocatori
+)
+val rotationAmount: List<List<Float>> = listOf(
+    listOf(0f),     //1 giocatori
+    listOf(-10f, 10f),     //2 giocatore
+    listOf(-15f, -5f, 5f),     //3 giocatori
+    listOf(-20f, -10f, 0f, 5f),     //4 giocatori
+)
+
 @Composable
 fun TeamScreen(
     modifier: Modifier = Modifier,
@@ -71,24 +86,11 @@ fun TeamScreen(
             shadowElevation = 8.dp,
             shape = RoundedCornerShape(30.dp)
         ) {
-
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 state.playersWithTeam.forEachIndexed { index, player ->
-                    val offsetAmount: List<List<Int>> = listOf(
-                        listOf(0),     //1 giocatori
-                        listOf(-25, 25),     //2 giocatore
-                        listOf(-50, 0, 50),     //3 giocatori
-                        listOf(-65, -25, 25, 75),     //4 giocatori
-                    )
-                    val rotationAmount: List<List<Float>> = listOf(
-                        listOf(0f),     //1 giocatori
-                        listOf(-10f, 10f),     //2 giocatore
-                        listOf(-15f, -5f, 5f),     //3 giocatori
-                        listOf(-20f, -10f, 0f, 5f),     //4 giocatori
-                    )
                     PlayerCard(
                         modifier = Modifier
                             .fillMaxWidth(0.4f)
@@ -102,6 +104,8 @@ fun TeamScreen(
                                 onEvent(BurracoEvent.OnTeamSelected(player))
                             }
                         },
+                        animationEnable = true,
+                        smallText = true
                     )
                 }
             }

@@ -24,10 +24,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import com.burraco.app.ui.theme.BurracoBlack
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun NameInputField(
@@ -65,7 +65,7 @@ fun NameInputField(
             label = {
                 Text(
                     text = "Nome",
-                    style = MaterialTheme.typography.labelSmall
+                    style = MaterialTheme.typography.labelMedium
                 )
             },
             isError = isError,
@@ -73,12 +73,14 @@ fun NameInputField(
                 when {
                     newPlayer.length > 12 -> Text(
                         text = "numero massimo di caratteri raggiunto",
-                        style = MaterialTheme.typography.labelSmall
+                        style = MaterialTheme.typography.labelSmall,
+                        textAlign = TextAlign.Center
                     )
 
                     newPlayer.isBlank() -> Text(
                         text = "inserisci un nome",
-                        style = MaterialTheme.typography.labelSmall
+                        style = MaterialTheme.typography.labelSmall,
+                        textAlign = TextAlign.Center
                     )
                 }
             },
@@ -113,12 +115,8 @@ fun NameInputField(
             modifier = Modifier.fillMaxWidth(0.5f)
         )
 
-        var isButtonVisible by rememberSaveable { mutableStateOf(false) }
-        LaunchedEffect(Unit) { isButtonVisible = false }
-        LaunchedEffect(isError) { isButtonVisible = !isError}
-
         AnimatedVisibility(
-            visible = isButtonVisible,
+            visible = !isError,
             enter = fadeIn(animationSpec = tween(500)),
             exit = fadeOut(animationSpec = tween(500))
         ) {

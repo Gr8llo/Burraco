@@ -18,18 +18,36 @@ val Fredoka = FontFamily(
 
 // Set of Material typography styles to start with
 val Typography = Typography(
-    bodyLarge = TextStyle(
-        fontFamily = Fredoka,
-        fontWeight = FontWeight.Bold,
-        fontSize = 30.sp,
-        letterSpacing = 0.sp,
-        color = BurracoBlack
-    ),
 
     titleLarge = TextStyle(
         fontFamily = Fredoka,
         fontWeight = FontWeight.Bold,
         fontSize = 80.sp,
+        letterSpacing = 0.sp,
+        color = BurracoBlack
+    ),
+
+    titleMedium = TextStyle(
+        fontFamily = Fredoka,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 35.sp,
+        letterSpacing = 0.sp,
+        color = BurracoBlack
+    ),
+
+    titleSmall =  TextStyle(
+        fontFamily = Fredoka,
+        fontWeight = FontWeight.Bold,
+        fontSize = 25.sp,
+        letterSpacing = 0.sp,
+        color = BurracoBlack,
+        lineHeight = 20.sp
+    ),
+
+    bodyLarge = TextStyle(
+        fontFamily = Fredoka,
+        fontWeight = FontWeight.Bold,
+        fontSize = 30.sp,
         letterSpacing = 0.sp,
         color = BurracoBlack
     ),
@@ -45,14 +63,14 @@ val Typography = Typography(
     labelMedium = TextStyle(
         fontFamily = Fredoka,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 19.sp,
+        fontSize = 22.sp,
         color = BurracoBlack
     ) ,
 
     labelSmall = TextStyle(
         fontFamily = Fredoka,
         fontWeight = FontWeight.Normal,
-        fontSize = 18.sp,
+        fontSize = 20.sp,
         color = BurracoBlack
     )
 

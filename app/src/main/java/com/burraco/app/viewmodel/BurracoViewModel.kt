@@ -46,6 +46,11 @@ class BurracoViewModel @Inject constructor(
 
     fun onEvent(event: BurracoEvent) {
         when (event) {
+            is BurracoEvent.OnNewGame -> {
+                repository.clearSession()
+                _sortType.update { SortType.LAST_PLAY }
+            }
+
             is BurracoEvent.ShowAddPlayer -> _state.update {
                 it.copy(showAddPlayer = true)
             }
@@ -90,11 +95,17 @@ class BurracoViewModel @Inject constructor(
             }
 
             is BurracoEvent.ShowRemovePlayer -> _state.update {
-                it.copy(showRemovePlayer = true)
+                it.copy(
+                    showRemovePlayer = true,
+                    selectedPlayers = emptyList()
+                )
             }
 
             is BurracoEvent.HideRemovePlayer -> _state.update {
-                it.copy(showRemovePlayer = false)
+                it.copy(
+                    showRemovePlayer = false,
+                    selectedPlayers = emptyList()
+                )
             }
 
             is BurracoEvent.RemovePlayer -> viewModelScope.launch {
@@ -120,14 +131,14 @@ class BurracoViewModel @Inject constructor(
             is BurracoEvent.OnMatchPlayersConfirmed -> {
                 val players = _state.value.selectedPlayers
 
-                if (repository.currentTeams.value.isNotEmpty()) repository.clearTeam()
+                repository.clearSession()
 
                 players.forEach { player -> repository.addPlayer(player) }
                 if (players.size < 4) {
                     players.forEach { player ->
                         repository.addTeam(
                             Team(
-                                name = player.name,
+                                name = player.name.replaceFirstChar {it.uppercase()},
                                 players = listOf(player),
                             )
                         )
@@ -164,19 +175,19 @@ class BurracoViewModel @Inject constructor(
 
             is BurracoEvent.OnMatchTeamsConfirmed -> {
 
-                if (repository.currentTeams.value.isNotEmpty()) repository.clearTeam()  //per evitare traccie di dati vecchi
+               if(repository.currentPlayers.value.isNotEmpty()) repository.clearTeam()
 
                 val players = _state.value.playersWithTeam
                 repository.addTeam(
                     Team(
                         players = listOf(players[0], players[1]),
-                        name = "${ players[0].name } & ${ players[1].name }",
+                        name = "${ players[0].name.replaceFirstChar {it.uppercase()} } & ${ players[1].name.replaceFirstChar {it.uppercase()} }",
                     )
                 )
                 repository.addTeam(
                     Team(
                         players = listOf(players[2], players[3]),
-                        name = "${ players[2].name } & ${ players[3].name }",
+                        name = "${ players[2].name.replaceFirstChar {it.uppercase()} } & ${ players[3].name.replaceFirstChar {it.uppercase()} }",
                     )
                 )
             }

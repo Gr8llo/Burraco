@@ -26,41 +26,44 @@ class GameSessionRepository @Inject constructor() {
     val currentTeams = _currentTeams.asStateFlow()
     val currentRound = _currentRound.asStateFlow()
 
-    fun addPlayer(player: Player){
-        if (player !in _currentPlayers.value){
+    fun addPlayer(player: Player) {
+        if (player !in _currentPlayers.value) {
             _currentPlayers.value += player
         }
     }
 
-    fun clearPlayer(){
+    fun clearPlayer() {
         _currentPlayers.value = listOf()
     }
 
-    fun addTeam(team: Team){
+    fun addTeam(team: Team) {
         _currentTeams.value += team
     }
 
-    fun clearTeam(){
+    fun clearTeam() {
         _currentTeams.value = emptyList()
     }
 
-    fun updateRoundPoints(team: Team, points: Pair<Int,Int>){
+    fun upsertRoundPoints(team: Team, points: Pair<Int, Int>) {
         if (_currentRound.value <= 0) return // posto per un Log in futuro
 
         _currentTeams.update { it ->
             it.map { currentTeam ->
                 if (currentTeam == team) {
                     val updatedScores = currentTeam.scores.toMutableList()
-                    updatedScores[_currentRound.value-1] = points
+                    if (updatedScores.size < currentRound.value)
+                        updatedScores.add(points)
+                    else
+                        updatedScores[currentRound.value - 1] = points
                     currentTeam.copy(scores = updatedScores)
                 } else {
-                   currentTeam
+                    currentTeam
                 }
             }
         }
     }
 
-    fun nextRound(){
+    fun nextRound() {
         _currentRound.value++
     }
 

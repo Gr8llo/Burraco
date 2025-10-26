@@ -54,10 +54,10 @@ fun BurracoButton(
             ),
             onClick = onClick,
             contentPadding = if (large) PaddingValues(
-                horizontal = 25.dp,
+                horizontal = 22.dp,
                 vertical = 8.dp
             ) else PaddingValues(
-                horizontal = 20.dp,
+                horizontal = 17.dp,
                 vertical = 5.dp
             ),
             shape = RoundedCornerShape(30.dp),

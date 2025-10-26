@@ -1,7 +1,6 @@
 package com.burraco.app.ui.screen
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -24,6 +22,7 @@ import com.burraco.app.navigation.SetupScreen
 import com.burraco.app.ui.components.BurracoButton
 import com.burraco.app.ui.uiEvent.BurracoEvent
 import com.burraco.app.ui.uiState.BurracoState
+import com.burraco.app.ui.uiState.SortType
 
 
 @Composable
@@ -34,7 +33,7 @@ fun HomeScreen(
     onNavigate: (String) -> Unit,
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 30.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -61,10 +60,13 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.Center,
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.card_suits_playing),
+                    painter = painterResource(id = R.drawable.suits_playing),
                     contentDescription = "Illustrazione di semi di carte che giocano",
                     modifier = Modifier
-                        .weight(1f, fill = false)  //weight in verticale Colonna + fill=false -> Riserva lo spazio, ma non si "stira" per riempirlo
+                        .weight(
+                            1f,
+                            fill = false
+                        )  //weight in verticale Colonna + fill=false -> Riserva lo spazio, ma non si "stira" per riempirlo
                         .fillMaxWidth(0.8f),   //questo ovviamente sulla larghezza
                     contentScale = ContentScale.Crop
                 )
@@ -84,14 +86,20 @@ fun HomeScreen(
                 BurracoButton(
                     text = "Nuova Partita",
                     enabled = true,
-                    onClick = { onNavigate(SetupScreen.Player.route) },
+                    onClick = {
+                        onEvent(BurracoEvent.OnNewGame)
+                        onNavigate(SetupScreen.Player.route)
+                    },
                     large = !state.showResume,
                 )
                 Spacer(modifier = Modifier.height(1.dp))
                 BurracoButton(
                     text = "Statistiche",
                     enabled = true,
-                    onClick = { TODO() },
+                    onClick = {
+                        onEvent(BurracoEvent.SortPlayer(SortType.MATCH_WON))
+                        onNavigate(SetupScreen.History.route)
+                    },
                 )
             }
         }
