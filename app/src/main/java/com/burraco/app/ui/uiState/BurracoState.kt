@@ -9,6 +9,7 @@ data class BurracoState(
     val showErrorDialog: Boolean = false,
     val errorMessage: String? = null,
     val showRemovePlayer: Boolean = false,
+    val playerToRemove: Player? = null,
     val showResume: Boolean = false,
     val playersWithTeam: List<Player> = listOf(),
     val playersWithoutTeam: List<Player> = listOf(),

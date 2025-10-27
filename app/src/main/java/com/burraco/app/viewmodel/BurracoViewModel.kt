@@ -109,7 +109,16 @@ class BurracoViewModel @Inject constructor(
             }
 
             is BurracoEvent.RemovePlayer -> viewModelScope.launch {
+                _state.update { it.copy(playerToRemove = event.player) }
+            }
+
+            is BurracoEvent.ConfirmRemovePlayer -> viewModelScope.launch {
                 dao.deletePlayer(event.player)
+                _state.update { it.copy(playerToRemove = null) }
+            }
+
+            is BurracoEvent.CancelRemovePlayer -> viewModelScope.launch {
+                _state.update { it.copy(playerToRemove = null) }
             }
 
             is BurracoEvent.OnPlayerSelected -> {
@@ -138,7 +147,7 @@ class BurracoViewModel @Inject constructor(
                     players.forEach { player ->
                         repository.addTeam(
                             Team(
-                                name = player.name.replaceFirstChar {it.uppercase()},
+                                name = player.name.replaceFirstChar { it.uppercase() },
                                 players = listOf(player),
                             )
                         )
@@ -175,19 +184,19 @@ class BurracoViewModel @Inject constructor(
 
             is BurracoEvent.OnMatchTeamsConfirmed -> {
 
-               if(repository.currentPlayers.value.isNotEmpty()) repository.clearTeam()
+                if (repository.currentPlayers.value.isNotEmpty()) repository.clearTeam()
 
                 val players = _state.value.playersWithTeam
                 repository.addTeam(
                     Team(
                         players = listOf(players[0], players[1]),
-                        name = "${ players[0].name.replaceFirstChar {it.uppercase()} } & ${ players[1].name.replaceFirstChar {it.uppercase()} }",
+                        name = "${players[0].name.replaceFirstChar { it.uppercase() }} & ${players[1].name.replaceFirstChar { it.uppercase() }}",
                     )
                 )
                 repository.addTeam(
                     Team(
                         players = listOf(players[2], players[3]),
-                        name = "${ players[2].name.replaceFirstChar {it.uppercase()} } & ${ players[3].name.replaceFirstChar {it.uppercase()} }",
+                        name = "${players[2].name.replaceFirstChar { it.uppercase() }} & ${players[3].name.replaceFirstChar { it.uppercase() }}",
                     )
                 )
             }

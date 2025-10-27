@@ -34,7 +34,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
@@ -263,7 +262,7 @@ fun ClassicalMatchScreen(
         }
 
         if (!state.showInputField) {
-            BottomBar(
+            ButtonsMatchBar(
                 modifier = Modifier.align(Alignment.BottomCenter),
                 onEvent = onEvent,
                 onNavigate = onNavigate,
@@ -282,7 +281,7 @@ fun ClassicalMatchScreen(
 }
 
 @Composable
-fun BottomBar(
+fun ButtonsMatchBar(
     modifier: Modifier = Modifier,
     onEvent: (GameEvent) -> Unit,
     onNavigate: (String) -> Unit,
